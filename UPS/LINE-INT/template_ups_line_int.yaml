@@ -1,0 +1,293 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 3dcd5bbe90534f9e8eb5c2d53756af63
+      name: Templates/Power
+    - uuid: 0e60ac85bc3941e2a1d66a048ff164da
+      name: UPS
+  templates:
+    - uuid: 2fe9bbcb784d46b9bc3f13e99f3dafcd
+      template: 'UPS Line-Int'
+      name: 'UPS Line-Int'
+      groups:
+        - name: Templates/Power
+        - name: UPS
+      items:
+        - uuid: eb896760637148f7baf31edb5a990d8f
+          name: 'Alarm present'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.6.1.0
+          key: get.alarm_present
+          history: 365d
+          triggers:
+            - uuid: 4c88de00858d4225844f00f3e861a089
+              expression: 'last(/UPS Line-Int/get.alarm_present,#1)<>0'
+              name: 'UPS Alarm'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: b2c527d7f9f649dd8092fd14fd9f55ba
+          name: 'Battery capacity'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.4.0
+          key: get.battery_capacity
+          history: 365d
+          units: '%'
+          triggers:
+            - uuid: dc12a5b0139e4229a1f7914345a701d0
+              expression: 'last(/UPS Line-Int/get.battery_capacity,#1)<30'
+              name: 'UPS Battery capacity under 30%'
+              priority: HIGH
+              manual_close: 'YES'
+            - uuid: 14c88b7360c94bc8a1bac8928c8f2fa3
+              expression: 'last(/UPS Line-Int/get.battery_capacity,#1)<50'
+              name: 'UPS Battery capacity under 50%'
+              priority: AVERAGE
+              manual_close: 'YES'
+            - uuid: d2af95f5666f4bb3b342b94de4b82111
+              expression: 'last(/UPS Line-Int/get.battery_capacity,#1)<80'
+              name: 'UPS Battery capacity under 80%'
+              priority: WARNING
+              manual_close: 'YES'
+        - uuid: e5b78e566c43426bb37cb085ab0fb9f2
+          name: 'Battery voltage'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.5.0
+          key: get.battery_voltage
+          history: 365d
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+        - uuid: f03a90365414446ca8f0f6f093e54fac
+          name: 'Charge remaining'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.4.0
+          key: get.charge_remaining
+          history: 365d
+          units: '%'
+          triggers:
+            - uuid: f33928daf38a48bbac3103e3cb2bbb0a
+              expression: 'last(/UPS Line-Int/get.charge_remaining,#1)<10'
+              name: 'UPS Charge remaining < 10%'
+              priority: DISASTER
+              manual_close: 'YES'
+            - uuid: 8c6d13047e1a452cb86e9d6f6f30771b
+              expression: 'last(/UPS Line-Int/get.charge_remaining,#1)<50'
+              name: 'UPS Charge remaining < 50%'
+              priority: HIGH
+              manual_close: 'YES'
+            - uuid: b32fc88ebc6c4db7b8eb39d4920f1341
+              expression: 'last(/UPS Line-Int/get.charge_remaining,#1)<90'
+              name: 'UPS Charge remaining < 90%'
+              priority: WARNING
+              manual_close: 'YES'
+        - uuid: a4dfa3d33ffa4ea78b7c7a196ea96a73
+          name: 'Firmware version'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.1.3.0
+          key: get.firmware_version
+          delay: 1h
+          history: 365d
+          value_type: TEXT
+        - uuid: 2ba0016bd3c84f8293f51b76fcf9b7fd
+          name: 'Input voltage'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.3.1
+          key: get.input_voltage
+          history: 365d
+          units: V
+          triggers:
+            - uuid: ee45752aca4346cb9c709da978f180b0
+              expression: 'last(/UPS Line-Int/get.input_voltage,#1)>248'
+              name: 'UPS Input voltage high'
+              priority: HIGH
+              manual_close: 'YES'
+            - uuid: 615bf94ecc2148fa99f19a8431d3f3bb
+              expression: 'last(/UPS Line-Int/get.input_voltage,#1)<210'
+              name: 'UPS Input voltage low'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: 11a427756271425181d393589596d589
+          name: Manufacturer
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.1.2.0
+          key: get.manufacturer
+          delay: 1d
+          history: 365d
+          value_type: TEXT
+        - uuid: 102d4e66cd5f431ebd10d04cfc8a27de
+          name: 'Minutes remaining'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.3.0
+          key: get.minutes_remaining
+          history: 365d
+          units: min
+          triggers:
+            - uuid: b7d258e5cd9e4f66bd60ff1b8637c8d5
+              expression: 'last(/UPS Line-Int/get.minutes_remaining,#1)<3'
+              name: 'UPS Less than 3 minutes remaining'
+              priority: DISASTER
+              manual_close: 'YES'
+            - uuid: a14fede75f134c1fb8ebba1b38ece13d
+              expression: 'last(/UPS Line-Int/get.minutes_remaining,#1)<10'
+              name: 'UPS Less than 10 minutes remaining'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: c1337113ef4442e3a5c5b6bce54e8f38
+          name: 'Network Management Card Firmware Version'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.1.4.0
+          key: get.nmc_firmware_version
+          delay: 1h
+          history: 365d
+          value_type: TEXT
+        - uuid: aff33f4da08a48b0b6d60f2f8ea0d3a9
+          name: 'Output frequency'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.2.0
+          key: get.output_frequency
+          history: 365d
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          triggers:
+            - uuid: 65c12187dcdf4eb1b803e5eca9099d40
+              expression: 'last(/UPS Line-Int/get.output_frequency,#1)>50.5'
+              name: 'UPS Output frequency high'
+              priority: HIGH
+              manual_close: 'YES'
+            - uuid: 87c8fa8b59b74c62abc6a6d3d6e55b43
+              expression: 'last(/UPS Line-Int/get.output_frequency)<49.5'
+              name: 'UPS Output frequency low'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: f23ba4daa2164fb29b723393d068a4a7
+          name: 'Output load'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.5.1
+          key: get.output_load
+          history: 365d
+          units: '%'
+          triggers:
+            - uuid: dd3ff1b3b6a84367b5d8a5d8ab064765
+              expression: 'last(/UPS Line-Int/get.output_load,#1)>80'
+              name: 'UPS Output load high'
+              priority: AVERAGE
+              manual_close: 'YES'
+        - uuid: e70d19584f7d466192a85d049789390b
+          name: 'Output voltage'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.2.1
+          key: get.output_voltage
+          history: 365d
+          units: V
+          triggers:
+            - uuid: 30bd10aaf4224492b98e39c2157a5fd8
+              expression: 'last(/UPS Line-Int/get.output_voltage,#1)>248'
+              name: 'UPS Output voltage high'
+              priority: HIGH
+              manual_close: 'YES'
+            - uuid: aa460486b42a4ecc995711f00ff752e7
+              expression: 'last(/UPS Line-Int/get.output_voltage,#1)<205'
+              name: 'UPS Output voltage low'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: a387e8aa416f402a93c30ef3d2075a63
+          name: Temperature
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.7.0
+          key: get.temperature
+          history: 365d
+          units: C
+          triggers:
+            - uuid: 1d45230900064fd0a4c6b43289555ab1
+              expression: 'last(/UPS Line-Int/get.temperature,#1)>40'
+              name: 'UPS Battery temperature high'
+              priority: HIGH
+              manual_close: 'YES'
+  graphs:
+    - uuid: c722eb6d65244167a603fad5abffd239
+      name: 'Alarm present'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.alarm_present
+    - uuid: d899ad40a5b446e3b334bf2fb5484c9e
+      name: 'Battery capacity'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.battery_capacity
+    - uuid: 87418f38f6d848a386a0861099c2a5db
+      name: 'Battery temperature'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.temperature
+    - uuid: 3e101837a5ac4aa8a1a997170399c0e0
+      name: 'Battery voltage'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.battery_voltage
+    - uuid: e4d91727c63045c29d1359a22c5e0444
+      name: 'Charge remaining'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.charge_remaining
+    - uuid: 9f404b8943714a3f81d85e2fe8bfcce2
+      name: 'Input voltage'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.input_voltage
+    - uuid: f9af865dc250476daca97a0b71b98a6d
+      name: 'Minutes remaining'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.minutes_remaining
+    - uuid: 9b3354f335be4bdfa1c1d59fcf791b97
+      name: 'Output frequency'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.output_frequency
+    - uuid: 227334d038704df8994fd62893133417
+      name: 'Output load'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.output_load
+    - uuid: bf811e2e790f4ee3869f15a799b0c78a
+      name: 'Output voltage'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'UPS Line-Int'
+            key: get.output_voltage
